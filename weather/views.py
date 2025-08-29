@@ -8,10 +8,10 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.views.generic import TemplateView
-
-# Import our custom modules
 from .api import get_weather_data
 from .serializers import WeatherResponseSerializer
+from .api import get_weather_data, get_forecast_data 
+from .serializers import WeatherResponseSerializer, ForecastDaySerializer
 
 class CurrentWeatherView(APIView):
     """
@@ -76,3 +76,31 @@ class WeatherDashboardView(TemplateView):
     A view that renders the main weather dashboard HTML page.
     """
     template_name = 'weather/dashboard.html'
+
+class ForecastWeatherView(APIView):
+    """
+    API view to get the 5-day weather forecast for a given location.
+    """
+    def get(self, request, *args, **kwargs):
+        city = request.query_params.get('city')
+        # (Add lat/lon logic here if you need it)
+
+        if not city:
+            return Response({"error": "Please provide a 'city' parameter."}, status=status.HTTP_400_BAD_REQUEST)
+
+        cache_key = f"forecast_{city.lower().replace(' ', '')}"
+        cached_data = cache.get(cache_key)
+        if cached_data:
+            return Response(cached_data, status=status.HTTP_200_OK)
+        
+        processed_forecast, error = get_forecast_data(city=city)
+
+        if error:
+            return Response({"error": error}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+
+        serializer = ForecastDaySerializer(data=processed_forecast, many=True)
+        serializer.is_valid(raise_exception=True)
+
+        cache.set(cache_key, serializer.data, timeout=3600) # Cache for 1 hour
+
+        return Response(serializer.data, status=status.HTTP_200_OK)

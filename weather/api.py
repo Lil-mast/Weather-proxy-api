@@ -2,6 +2,7 @@
 
 import requests
 from decouple import config
+from datetime import datetime
 
 # Retrieve the API key from the .env file
 OPENWEATHERMAP_API_KEY = config('OPENWEATHERMAP_API_KEY')
@@ -46,3 +47,66 @@ def get_weather_data(city=None, lat=None, lon=None):
     except requests.exceptions.RequestException as req_err:
         # Handle other request-related errors (e.g., network issues)
         return None, f"An error occurred: {req_err}"
+
+FORECAST_API_URL = "https://api.openweathermap.org/data/2.5/forecast"
+
+def get_forecast_data(city=None, lat=None, lon=None):
+    """
+    Fetches 5-day weather forecast data from OpenWeatherMap and processes it
+    to return a simplified list of daily forecasts.
+    """
+    params = {
+        'appid': OPENWEATHERMAP_API_KEY,
+        'units': 'metric'
+    }
+    if city:
+        params['q'] = city
+    elif lat is not None and lon is not None:
+        params['lat'] = lat
+        params['lon'] = lon
+    else:
+        return None, "No location provided."
+
+    try:
+        response = requests.get(FORECAST_API_URL, params=params)
+        response.raise_for_status()
+        raw_data = response.json()
+        
+        # --- Process the raw forecast data into a daily summary ---
+        daily_forecasts = {}
+        for forecast in raw_data['list']:
+            date = datetime.fromtimestamp(forecast['dt']).date()
+            if date not in daily_forecasts:
+                daily_forecasts[date] = {
+                    'temps': [],
+                    'descriptions': {},
+                    'icons': {}
+                }
+            daily_forecasts[date]['temps'].append(forecast['main']['temp'])
+            
+            # Count descriptions and icons to find the most common one for the day
+            desc = forecast['weather'][0]['description'].capitalize()
+            icon = forecast['weather'][0]['icon']
+            daily_forecasts[date]['descriptions'][desc] = daily_forecasts[date]['descriptions'].get(desc, 0) + 1
+            daily_forecasts[date]['icons'][icon] = daily_forecasts[date]['icons'].get(icon, 0) + 1
+
+        processed_forecast = []
+        for date, data in sorted(daily_forecasts.items()):
+            if not data['temps']: continue # Skip if no data
+            
+            processed_forecast.append({
+                'date': date.isoformat(),
+                'day_of_week': date.strftime('%A'),
+                'temp_high': max(data['temps']),
+                'temp_low': min(data['temps']),
+                'description': max(data['descriptions'], key=data['descriptions'].get),
+                'icon_url': f"http://openweathermap.org/img/wn/{max(data['icons'], key=data['icons'].get)}@2x.png"
+            })
+        
+        # We only need the next 5 days, starting from tomorrow
+        return processed_forecast[1:6], None
+
+    except requests.exceptions.HTTPError as http_err:
+        return None, f"HTTP error occurred: {http_err}"
+    except Exception as err:
+        return None, f"An error occurred during forecast processing: {err}"
