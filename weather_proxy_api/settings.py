@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -77,11 +78,17 @@ WSGI_APPLICATION = 'weather_proxy_api.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',  # Specifies we are using MySQL
+        'NAME': config('DB_NAME'),            # Reads 'joto_track_db' from .env
+        'USER': config('DB_USER'),            # Reads 'joto_track_user' from .env
+        'PASSWORD': config('DB_PASSWORD'),      # Reads your secret password from .env
+        'HOST': config('DB_HOST'),            # Reads 'localhost' from .env
+        'PORT': config('DB_PORT', cast=int),  # Reads '3306' and ensures it's an integer
+        'OPTIONS': {
+        'charset': 'utf8mb4',
     }
 }
-
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators

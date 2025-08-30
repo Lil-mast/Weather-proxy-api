@@ -1,75 +1,76 @@
-<!-- weather/templates/weather/dashboard.html -->
-{% load static %}
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?display=swap&amp;family=Noto+Sans%3Awght%40400%3B500%3B700%3B900&amp;family=Space+Grotesk%3Awght%40400%3B500%3B700" />
-    <title>JotoTrack Dashboard</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JotoTrack: AI Weather Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        /* Simple class to hide/show tab content */
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="index.css">
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              'sans': ['Noto Sans', 'sans-serif'],
+              'grotesk': ['Space Grotesk', 'sans-serif'],
+            },
+            colors: {
+              'brand-dark': '#111816',
+              'brand-green-dark': '#283933',
+              'brand-accent': '#359dff',
+            }
+          },
+        },
+      }
+    </script>
+  </head>
+  <body class="bg-brand-dark">
+    <div id="app" class="min-h-screen text-white font-sans">
+      <div class="max-w-4xl mx-auto px-4 py-6">
+        <header class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <svg class="h-8 w-8 text-brand-accent" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2a10 10 0 0 0-2.5 19.36" />
+              <path d="M12 22a10 10 0 0 1-2.5-19.36" />
+              <path d="M2 12h20" />
+              <path d="M16 3.5a10 10 0 0 1 0 17" />
+              <path d="M8 3.5a10 10 0 0 0 0 17" />
+            </svg>
+            <h1 class="text-2xl font-bold font-grotesk tracking-tight">JotoTrack</h1>
+          </div>
+          <div class="flex-1 max-w-sm mx-4">
+            <form id="search-form">
+              <input type="search" id="city-search-input" placeholder="Search for a city..." class="w-full px-4 py-2 rounded-full bg-brand-green-dark/50 border border-slate-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-accent focus:border-transparent transition-all" />
+            </form>
+          </div>
+          <div class="flex items-center gap-4">
+            <button class="text-gray-400 hover:text-white transition-colors">
+              <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3" />
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+              </svg>
+            </button>
+            <button>
+              <img src="https://picsum.photos/seed/user/40/40" alt="User avatar" class="h-10 w-10 rounded-full border-2 border-slate-600 hover:border-brand-accent transition-all" />
+            </button>
+          </div>
+        </header>
 
-        /* Custom active tab styles */
-        .tab-link.active {
-            border-bottom-color: white !important;
-            color: white !important;
-        }
-        .tab-link.active svg {
-            color: white !important;
-        }
-    </style>
-</head>
-<body>
-    <div class="relative flex size-full min-h-screen flex-col bg-[#111816] dark" style='font-family: "Space Grotesk", "Noto Sans", sans-serif;'>
-        <div class="layout-container flex h-full grow flex-col">
-            <!-- HEADER -->
-            <header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#283933] px-10 py-3">
-                <div class="flex items-center gap-4 text-white">
-                    <div class="size-4">
-                        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 6H42L36 24L42 42H6L12 24L6 6Z" fill="currentColor"></path></svg>
-                    </div>
-                    <h2 class="text-white text-lg font-bold">JotoTrack</h2>
-                </div>
-                 <!-- Search Bar -->
-                <div class="flex-1 max-w-md mx-8">
-                    <input type="text" id="city-search-input" class="w-full bg-[#283933] text-white placeholder-gray-400 border-none rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-400" placeholder="Search for a city...">
-                </div>
-                <!-- Profile/Settings on the right -->
-            </header>
+        <main class="mt-6">
+          <div class="border-b border-slate-700">
+            <nav id="tabs-container" class="-mb-px flex space-x-8" aria-label="Tabs">
+            </nav>
+          </div>
 
-            <main class="px-4 sm:px-10 md:px-20 lg:px-40 flex flex-1 justify-center py-5">
-                <div class="layout-content-container flex flex-col max-w-[960px] flex-1">
-                    <!-- TABS NAVIGATION -->
-                    <nav class="pb-3">
-                        <div id="tabs-container" class="flex border-b border-[#3b544b] px-4 justify-between">
-                            <!-- Tab links will be dynamically controlled by JS -->
-                        </div>
-                    </nav>
-
-                    <!-- TAB CONTENT PANELS -->
-                    <div id="tab-content-today" class="tab-content active">
-                        <!-- Content for Today tab will be injected here by JS -->
-                    </div>
-                    <div id="tab-content-forecast" class="tab-content">
-                        <!-- Content for Forecast tab will be injected here by JS -->
-                    </div>
-                    <div id="tab-content-map" class="tab-content">
-                        <h2 class="text-white text-[22px] font-bold px-4 py-5">Weather Map</h2>
-                        <p class="text-gray-400 px-4">Map functionality is planned for a future update.</p>
-                    </div>
-                    <div id="tab-content-details" class="tab-content">
-                        <!-- Content for Details tab will be injected here by JS (from current weather) -->
-                    </div>
-                </div>
-            </main>
-        </div>
+          <div id="content-container" class="mt-6 transition-opacity duration-500">
+          </div>
+        </main>
+      </div>
     </div>
-    
-    <script src="{% static 'js/main.js' %}"></script>
-</body>
+
+    <script type="module" src="index.js"></script>
+  </body>
 </html>
