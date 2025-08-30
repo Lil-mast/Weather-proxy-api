@@ -12,9 +12,13 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 from decouple import config
+import os
+import dj_database_url # render import
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
 
 
 # Quick-start development settings - unsuitable for production
@@ -25,6 +29,7 @@ SECRET_KEY = 'django-insecure-*&nmr=yh38uq5yci)=vx)jlcftv_^vk%b9$g-mt(%_!f=jyq(9
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+DEBUG = os.environ.get('RENDER') is None
 
 ALLOWED_HOSTS = []
 
@@ -51,6 +56,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware', # <-- ADD THIS LINE
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    # ... rest of the middleware
 ]
 
 ROOT_URLCONF = 'weather_proxy_api.urls'
@@ -86,6 +94,8 @@ DATABASES = {
         'PORT': config('DB_PORT', cast=int),  # Reads '3306' and ensures it's an integer
         'OPTIONS': {
         'charset': 'utf8mb4',
+          default=f"mysql://{config('DB_USER')}:{config('DB_PASSWORD')}@{config('DB_HOST')}:{config('DB_PORT')}/{config('DB_NAME')}",
+        conn_max_age=600
     }
 }
 }
@@ -126,6 +136,9 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
+if not DEBUG:
+    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

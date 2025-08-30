@@ -1,0 +1,38 @@
+# app.yaml (FOR MYSQL)
+
+# Specifies the runtime environment.
+runtime: python311  # Use a recent Python version
+
+# Entrypoint tells App Engine how to start your application.
+entrypoint: gunicorn -b :$PORT weather_proxy_api.wsgi
+
+# Instance class determines the power of the server. F1 is small and cost-effective.
+instance_class: F1
+
+# App Engine needs to know which Cloud SQL instance to connect to.
+# This creates a secure connection to the specified MySQL instance.
+beta_settings:
+  cloud_sql_instances: YOUR_SQL_CONNECTION_NAME_HERE # <-- IMPORTANT: REPLACE THIS
+
+# Environment variables are loaded here.
+env_variables:
+  SECRET_KEY: "YOUR_NEW_SECRET_KEY_HERE" # <-- REPLACE THIS
+  DEBUG: "False"
+  OPENWEATHERMAP_API_KEY: "YOUR_WEATHER_KEY_HERE" # <-- REPLACE THIS
+  
+  # The database URL format for connecting to MySQL via the secure Unix socket.
+  # The username for Cloud SQL for MySQL is 'root' by default for most setups unless you created another.
+  DB_USER: "root" 
+  DB_PASSWORD: "YOUR_DB_PASSWORD_HERE" # <-- REPLACE THIS
+  DB_NAME: "joto_track_db"
+  DB_SOCKET: "/cloudsql/YOUR_SQL_CONNECTION_NAME_HERE" # <-- REPLACE THIS (same as above)
+  
+# Handlers define how App Engine routes traffic to your files.
+handlers:
+# This handler serves static files directly from the cloud for better performance.
+- url: /static
+  static_dir: static/
+  
+# This handler sends all other requests to your Django application.
+- url: /.*
+  script: auto
